@@ -1,0 +1,2 @@
+bin\Debug\OfficeAppManifests\ORAI-NOTIFICATIONManifest.xml
+D:\ORAI\Github-Notification\ORAI-NOTIFICATION\ORAI-NOTIFICATION\bin\Debug\ORAI-NOTIFICATION.debugapp

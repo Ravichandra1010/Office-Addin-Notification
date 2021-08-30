@@ -1,0 +1,604 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <title>Excel Add-In with Commands Sample</title>
+
+    <script src="Scripts/jquery-3.5.0.js" type="text/javascript"></script>
+    <script src="Scripts/MessageBanner.js" type="text/javascript"></script>
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js" type="text/javascript"></script>
+
+    <link href="Scripts/font-awesome.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+
+    <!-- To enable offline debugging using a local reference to Office.js, use:  -->
+    <!-- <script src="Scripts/Office/MicrosoftAjax.js" type="text/javascript"></script>  -->
+    <!-- <script src="Scripts/Office/1/office.js" type="text/javascript"></script>  -->
+
+    <script src="Home.js" type="text/javascript"></script>
+    <link href="Home.css" rel="stylesheet" type="text/css" />
+    <link href="../Content/Button.css" rel="stylesheet" type="text/css" />
+    <link href="../Content/MessageBanner.css" rel="stylesheet" type="text/css" />
+
+
+    <!-- For Office UI Fabric Core, go to https://aka.ms/office-ui-fabric to learn more. -->
+    <link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.6.0/css/fabric.min.css">
+
+    <!-- To enable the offline use of Office UI Fabric Core, use: -->
+    <!-- link rel="stylesheet" href="Content/fabric.min.css" -->
+    <style>
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            border-bottom: 1px dotted black;
+        }
+
+            .tooltip .tooltiptext {
+                visibility: hidden;
+                width: 120px;
+                background-color: black;
+                color: #fff;
+                text-align: center;
+                border-radius: 6px;
+                padding: 5px 0;
+                /* Position the tooltip */
+                position: absolute;
+                z-index: 1;
+            }
+
+            .tooltip:hover .tooltiptext {
+                visibility: visible;
+            }
+    </style>
+    <style>
+        /* Popup container - can be anything you want */
+        .popup {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+            /* The actual popup */
+            .popup .popuptext {
+                visibility: hidden;
+                width: 160px;
+                background-color: #555;
+                color: #fff;
+                text-align: center;
+                border-radius: 6px;
+                padding: 8px 0;
+                position: absolute;
+                z-index: 1;
+                bottom: 125%;
+                left: 50%;
+                margin-left: -80px;
+            }
+
+                /* Popup arrow */
+                .popup .popuptext::after {
+                    content: "";
+                    position: absolute;
+                    top: 100%;
+                    left: 50%;
+                    margin-left: -5px;
+                    border-width: 5px;
+                    border-style: solid;
+                    border-color: #555 transparent transparent transparent;
+                }
+
+            /* Toggle this class - hide and show the popup */
+            .popup .show {
+                visibility: visible;
+                -webkit-animation: fadeIn 1s;
+                animation: fadeIn 1s;
+            }
+
+        /* Add animation (fade in the popup) */
+
+
+    </style>
+</head>
+
+<!-- Office UI Fabric JS and it's components are no longer actively supported. Please see https://aka.ms/PnP-OfficeFabricReact for recommended Patterns and Practices -->
+<!-- <link rel="stylesheet" href="https://appsforoffice.microsoft.com/fabric/2.1.0/fabric.components.min.css"> -->
+
+<body class="ms-Fabric" dir="ltr">
+    <div id="content-main">
+        <div class="padding">
+
+
+            <form>
+                <div class="mb-3">
+                    <label for="exampleInputEmail1" class="form-label">Type</label>
+                    <select id="ddlType" class="form-control" onchange="onchangeType(),onChangeTemplateType(),CompleteHideShowFunction()">
+                        <option value="ORAI-T">ORAI-T</option>
+                        <option value="ORAI-K">ORAI-K</option>
+                        <option value="ORAI-360">ORAI-360</option>
+                    </select>
+                </div>
+                <div class="mb-3" id="divTemplateStatus" disabled style="display:none;">
+                    <label for="exampleInputEmail1" class="form-label">Template Status</label>
+                    <select id="ddlTemplateStatus" class="form-control" onchange="onChangeTemplateType(),CompleteHideShowFunction()">
+                        <option value="Approved">Approved</option>
+                        <option value="Not Approved">Not Approved</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="exampleInputEmail1" class="form-label">Template Type</label>
+                    <select id="ddlTemplateType" class="form-control" onchange="onChangeTemplateType(),CompleteHideShowFunction()">
+                        <option value="Text">Text</option>
+                        <option value="Media">Media</option>
+                    </select>
+                </div>
+
+                <div class="mb-3" id="divFrom">
+                    <!--/16147675272-->
+                    <label for="exampleInputEmail1" class="form-label">From</label>
+                    <input type="text" class="form-control" id="txtFrom" value="" aria-describedby="emailHelp">
+                </div>
+                <div class="mb-3" id="divSID">
+                    <label for="exampleInputEmail1" class="form-label">SID</label><!--AC1d1004528fd0f2f473513fb5db892692/-->
+                    <input type="text" class="form-control" id="txtSID" value="" aria-describedby="emailHelp">
+                </div>
+                <div class="mb-3" id="divAuthToken">
+                    <label for="exampleInputPassword1" class="form-label">Auth Token</label>
+                    <input type="text" class="form-control" value="" id="txtAuthToken">
+                </div>
+                <div class="mb-3" id="divAPIKEY" style="display:none;">
+                    <label for="exampleInputEmail1" class="form-label">API KEY</label>
+                    <input type="text" class="form-control" id="txtAPIKEY" value="" aria-describedby="emailHelp">
+                </div>
+
+
+                <div class="mb-3 labelmarging" id="div360APIKEY" style="display:none;">
+                    <label for="exampleInputEmail1" class="form-label">API KEY</label>
+                    <input type="text" class="form-control" id="txtT360APIKEY" value="" aria-describedby="emailHelp">
+                </div>
+                <div class="mb-3 labelmarging" id="divNamespace" style="display:none;">
+                    <label for="exampleInputEmail1" class="form-label">Namespace</label>
+                    <input type="text" class="form-control" id="txtT360Namespace" value="" aria-describedby="emailHelp">
+                </div>
+
+                <div class="mb-3 " style="" id="divTemplateName">
+
+                    <label for="" class="form-label">Template Name</label>
+                    <select id="ddlTemplateName" class="form-control" onchange="BindTemplate()">
+                    </select>
+                </div><!--divTemplate-->
+                <!---------------------------divTemplate--------------------------------------------------------------------------------------------------->
+                <div class="mb-3" id="divTemplate" style="display:none;">
+                    <label for="exampleInputPassword1" class="form-label">Template</label>
+                    <textarea class="form-control" id="txtTemplate" rows="4" cols="50" readonly> </textarea>
+                </div>
+
+                <div class="mb-3" id="divTemplateNotApproved" style="display:none;">
+                    <label for="exampleInputPassword1" class="form-label">Template</label>
+                    <textarea class="form-control" id="txtNotApprovedTemplate" rows="4" cols="50"> </textarea>
+                </div>
+
+                <!---------------------------divTemplate--------------------------------------------------------------------------------------------------->
+                <div class="mb-3" id="divMediaUrl" style="display:none;">
+                    <label for="exampleInputPassword1" class="form-label">Media Url</label>
+                    <input type="text" class="form-control" value="" id="txtMediaUrl">
+                </div>
+                <div class="mb-3" id="divFile">
+                    <label for="exampleInputPassword1" class="form-label">File</label>
+                    <input type="file" id="fileUploadInput" />
+                    <!--<input type="button" id="btnUploadFile" value="Upload Files" />-->
+                </div>
+
+                <div>
+
+                </div>
+                <br /><br />
+                <button type="button" class="btn btn-primary" id="btnSend">Send</button>
+
+                <div class="mb-3">
+                    <label for="" id="lblErrorMsg" class="form-label" style="color:red"></label>
+
+                </div>
+
+            </form>
+
+
+
+
+            <!--<br />
+            <div class="ms-font-xxl ms-fontColor-neutralSecondary ms-fontWeight-semilight">Sample</div>
+            <br /><br />
+            <div class="ms-font-xl ms-fontColor-neutralTertiary">Getting Started</div>
+            <p class="ms-font-m-plus ms-fontColor-neutralTertiary" id="template-description"></p>
+            <div class="ms-font-m"><a target="_blank" class="ms-Link ms-Link--hero" href="https://go.microsoft.com/fwlink/?LinkId=276812">Find more samples online...</a></div>
+            <br /><br />
+
+            <button class="Button Button--primary" id="highlight-button">
+                <span class="Button-icon"><i class="ms-Icon ms-Icon--plus"></i></span>
+                <span class="Button-label" id="button-text"></span>
+                <span class="Button-description" id="button-desc"></span>
+            </button>-->
+        </div>
+    </div>
+    <!--<div class="footer">
+        <div class="ms-Grid ms-bgColor-themeSecondary">
+            <div class="ms-Grid-row">
+                <div class="ms-Grid-col ms-u-sm12 ms-u-md12 ms-u-lg12"> <div class="ms-font-xl ms-fontColor-white">Contoso</div></div>
+            </div>
+        </div>
+    </div>-->
+    <!-- Component used for displaying notifications -->
+    <!--<div class="MessageBanner" id="notification-popup">
+        <div class="MessageBanner-content">
+            <div class="MessageBanner-text">
+                <div class="MessageBanner-clipper">
+                    <div class="ms-font-m-plus ms-fontWeight-semibold" id="notification-header"></div>
+                    <div class="ms-font-m ms-fontWeight-semilight" id="notification-body"></div>
+                </div>
+            </div>
+            <button class="MessageBanner-expand" style="display:none"><i class="ms-Icon ms-Icon--chevronsDown"></i> </button>
+            <div class="MessageBanner-action"></div>
+        </div>
+        <button class="MessageBanner-close"> <i class="ms-Icon ms-Icon--ChromeClose"></i> </button>
+    </div>-->
+</body>
+</html>
+<script>
+
+
+
+
+    $(document).ready(function () {
+
+        CompleteHideShowFunction();
+        $("#btnUploadFile").click(function (evt) {
+            var fileUpload = $("#FileUpload1").get(0);
+            var files = fileUpload.files;
+
+            var data = new FormData();
+            for (var i = 0; i < files.length; i++) {
+                data.append(files[i].name, files[i]);
+            }
+
+            var options = {};
+            options.url = "FileUploadHandler.ashx";
+            options.type = "POST";
+            options.data = data;
+            options.contentType = false;
+            options.processData = false;
+            options.success = function (result) {
+                //alert(result);
+            };
+            options.error = function (err) {
+                //alert(err.statusText);
+            };
+
+            $.ajax(options);
+
+            evt.preventDefault();
+        });
+    });
+
+    function myFunction() {
+
+
+        if ($('#txtTemplateName').val() == "") {
+
+            displayErrorMessage("Please Enter Template Name");
+            return false;
+        }
+        else {
+            var popup = document.getElementById("myPopup");
+            popup.classList.toggle("show");
+            displayErrorMessage("");
+            return false;
+        }
+    }
+    function displayErrorMessage(errormsg) {
+        $("#lblErrorMsg").text(errormsg);
+    }
+    $("#txtFrom").blur(function () {
+        var fileData = new FormData();
+
+        fileData.append("NotificationType", $('#ddlType').val());
+        fileData.append("TemplateType", $('#ddlTemplateType').val());
+        fileData.append("From", $('#txtFrom').val());
+        $.ajax({
+            type: "POST",
+            url: "https://e2ewebservice20190528111726.azurewebsites.net/LoadExcel/GetAllTemplateNameByFrom",
+            //url: "https://localhost:44351/LoadExcel/GetAllTemplateNameByFrom",
+            dataType: "json",
+            contentType: false, // Not to set any content header
+            processData: false, // Not to process data
+            data: fileData,
+            async: true,
+            success: function (result, status, xhr) {
+                //  alert(result);
+                $("#ddlTemplateName").empty()
+                $("#ddlTemplateName").append("<option value='Select Template Name' >Select Template Name</option>");
+
+                for (var i = 0; i < result.length; i++) {
+                    $('#ddlTemplateName').append("<option value = '" + result[i].Value + "'>" + result[i].Text + "</option>");
+
+
+                }
+
+                //$("#ddlTemplateName option:selected").text(localStorage.getItem("TTemplateName"))
+
+                //setInterval(function () {
+                //    $('#txtTemplate').val("");
+                //    BindTemplate(); }, 3000);
+
+                //popupMessages("Excel columns loaded successfully", "success");
+                $('#loading').hide();
+            },
+            error: function (xhr, status, error) {
+                //alert(status);
+            }
+        },          
+        );
+        
+    });
+
+
+    function BindTemplate() {
+
+        if ($("#ddlTemplateName option:selected").text() != "Select Template Name")
+            $('#txtTemplate').val($("#ddlTemplateName option:selected").val())
+        else
+            $('#txtTemplate').val("")
+    }
+
+    function CompleteHideShowFunction() {
+
+        if ($('#ddlType').val() == "ORAI-T") {
+
+            $('#div360APIKEY').hide();
+            $('#divNamespace').hide();
+            $('#divFrom').show();
+            $('#divSID').show();
+
+            $('#divAPIKEY').hide();
+            $('#divAuthToken').show();
+            //$('#divTemplateStatus').hide();
+
+            $('#divMediaUrl').hide();
+
+            $('#divTemplateNotApproved').hide();
+            $('#divFile').hide();
+            $('#divTemplateName').hide();
+            $('#divTemplate').hide();
+
+            if ($('#ddlTemplateType').val() == "Text") {
+                $('#divTemplateName').show();
+                $('#divTemplate').show();
+
+                setCommonData("TFrom", "TSID", "TAuthToken", "","","", "ORAI-T");
+                setTextMediaDataUsingTypeAndTemplateType("Text", "ORAI-T");
+            }
+            else {
+                $('#divTemplateName').show();
+                $('#divTemplate').show();
+                $('#divMediaUrl').show();
+                setCommonData("TMFrom", "TMSID", "TMAuthToken", "","","", "ORAI-T");
+                setTextMediaDataUsingTypeAndTemplateType("Media", "ORAI-T");
+            }
+        }
+        else if ($('#ddlType').val() == "ORAI-K") {
+
+            $('#div360APIKEY').hide();
+            $('#divNamespace').hide();
+            $('#divFrom').show();
+            $('#divSID').show();
+
+            $('#divAPIKEY').show();
+            // $('#divTemplateStatus').show();
+
+            $('#divMediaUrl').hide();
+            $('#divAuthToken').hide();
+            $('#divTemplateNotApproved').hide();
+            $('#divFile').hide();
+            $('#divTemplateName').hide();
+            $('#divTemplate').hide();
+
+            if ($('#ddlTemplateType').val() == "Text") {
+                setCommonData("KFrom", "KSID", "", "KAPIKEY","","", "ORAI-K");
+                setTextMediaDataUsingTypeAndTemplateType("Text", "ORAI-K");
+                if ($('#ddlTemplateStatus').val() == "Approved") {
+                    $('#divTemplateName').show();
+                    $('#divTemplate').show();
+                }
+                else {
+
+                    $('#divTemplateNotApproved').show();
+                }
+            }
+            else {
+                setCommonData("KMFrom", "KMSID", "", "KMAPIKEY","","", "ORAI-K");
+                setTextMediaDataUsingTypeAndTemplateType("Media", "ORAI-K");
+                if ($('#ddlTemplateStatus').val() == "Approved") {
+                    $('#divTemplateName').show();
+                    $('#divTemplate').show();
+                    $('#divFile').show();
+                }
+                else {
+                    $('#divFile').show();
+                }
+
+            }
+        }
+        else if ($('#ddlType').val() == "ORAI-360") {
+
+            $('#divFrom').hide();
+            $('#divSID').hide();
+            $('#divAuthToken').hide();
+            $('#divAPIKEY').hide();
+            
+            $('#divFile').hide();
+            $('#div360APIKEY').show();
+            $('#divNamespace').show();
+
+
+            if ($('#ddlTemplateType').val() == "Text") {
+                
+                setCommonData("", "", "", "","T360APIKEY","T360Namespace", "ORAI-360");
+                setTextMediaDataUsingTypeAndTemplateType("Text", "ORAI-360");
+                $('#divMediaUrl').hide();
+            }
+            else {
+                
+                setCommonData("", "", "", "", "TM360APIKEY", "TM360Namespace", "ORAI-360");
+                setTextMediaDataUsingTypeAndTemplateType("Media", "ORAI-360");
+                if ($('#ddlTemplateStatus').val() == "Approved") {
+                    $('#divTemplateName').show();
+                    $('#divTemplate').show();
+                    $('#divFile').hide();
+                    $('#divMediaUrl').show();
+                }
+                else {
+                    $('#divFile').hide();
+                    $('#divMediaUrl').show();
+                }
+
+            }
+        }
+    }
+    function setCommonData(From, SID, AuthToken, APIKey,APIKey360,Namespace, Type) {
+
+        if (Type == "ORAI-T") {
+            $('#txtFrom').val("");
+            $('#txtSID').val("");
+            $('#txtFrom').val(localStorage.getItem(From))
+            $("#txtFrom").blur()
+            $('#txtSID').val(localStorage.getItem(SID));
+            $('#txtAuthToken').val("");
+            $('#txtAuthToken').val(localStorage.getItem(AuthToken));
+        }
+        else if (Type == "ORAI-K") {
+            $('#txtFrom').val("");
+            $('#txtSID').val("");
+            $('#txtFrom').val(localStorage.getItem(From))
+            $("#txtFrom").blur()
+            $('#txtSID').val(localStorage.getItem(SID));
+            $('#txtAPIKEY').val("");
+            $('#txtAPIKEY').val(localStorage.getItem(APIKey));
+        } else if (Type == "ORAI-360") {
+            $('#txtT360APIKEY').val("");
+            $('#txtT360APIKEY').val(localStorage.getItem(APIKey360));
+            $("#txtT360APIKEY").blur()
+            $('#txtT360Namespace').val("");
+            $('#txtT360Namespace').val(localStorage.getItem(Namespace));
+          
+        }
+
+    }
+    function setTextMediaDataUsingTypeAndTemplateType(TemplateType, Type) {
+        
+        if (Type == "ORAI-T") {
+            if (TemplateType == "Text") {
+                setddlTemplateName("TTemplateName");
+                $('#txtTemplate').val("");
+                $('#txtTemplate').val(localStorage.getItem("TTemplate"));
+            }
+            else {
+                setddlTemplateName("TMTemplateName");
+                $('#txtTemplate').val("");
+                $('#txtTemplate').val(localStorage.getItem("TMTemplate"));
+                $('#txtMediaUrl').val("");
+                $('#txtMediaUrl').val(localStorage.getItem("TMMediaUrl"));
+            }
+        }
+        else if (Type == "ORAI-K") {
+            if (TemplateType == "Text") {
+                setddlTemplateName("KTemplateName");
+                $('#txtTemplate').val("")
+                $('#txtTemplate').val(localStorage.getItem("KTemplate"));
+            }
+            else {
+                setddlTemplateName("KMTemplateName");
+                $('#txtTemplate').val("");
+                $('#txtTemplate').val(localStorage.getItem("KMTemplate"));
+            }
+        }
+        else if (Type == "ORAI-360") {
+           
+            if (TemplateType == "Text") {
+                setddlTemplateName("T360TemplateName");
+                $('#txtTemplate').val("")
+                $('#txtTemplate').val(localStorage.getItem("T360Template"));
+            }
+            else {
+                
+                setddlTemplateName("TM360TemplateName");
+                $('#txtTemplate').val("");
+                $('#txtTemplate').val(localStorage.getItem("TM360Template"));
+                $('#txtMediaUrl').val("");
+                $('#txtMediaUrl').val(localStorage.getItem("TM360MediaUrl"));
+            }
+        }
+    }
+    function setddlTemplateName(TemplateName) {
+        var t = localStorage.getItem(TemplateName);
+        setTimeout(function () {
+            $("#ddlTemplateName option").each(function () {
+                if ($(this).text() == localStorage.getItem(TemplateName)) {
+                    $(this).attr('selected', 'selected');
+                }
+            });
+        }, 3000);
+    }
+
+    function onchangeType() {
+        $('#ddlTemplateStatus').val("Approved");
+    }
+
+    function onChangeTemplateType() {
+        var type = $('#ddlType').val();
+        if (type != "ORAI-360") {
+            $('#txtFrom').val("");
+        }
+        else {
+            $('#txtT360APIKEY').val("");
+        }
+
+    }
+
+    $("#txtT360APIKEY").blur(function () {
+        var fileData = new FormData();
+
+        fileData.append("NotificationType", $('#ddlType').val());
+        fileData.append("TemplateType", $('#ddlTemplateType').val());
+        fileData.append("From", $('#txtT360APIKEY').val());
+        $.ajax({
+            type: "POST",
+            url: "https://e2ewebservice20190528111726.azurewebsites.net/LoadExcel/GetAllTemplateNameByFrom",
+            //url: "https://localhost:44351/LoadExcel/GetAllTemplateNameByFrom",
+            dataType: "json",
+            contentType: false, // Not to set any content header
+            processData: false, // Not to process data
+            data: fileData,
+            async: true,
+            success: function (result, status, xhr) {
+                //  alert(result);
+                $("#ddlTemplateName").empty()
+                $("#ddlTemplateName").append("<option value='Select Template Name' >Select Template Name</option>");
+
+                for (var i = 0; i < result.length; i++) {
+                    $('#ddlTemplateName').append("<option value = '" + result[i].Value + "'>" + result[i].Text + "</option>");
+                }
+                //popupMessages("Excel columns loaded successfully", "success");
+                $('#loading').hide();
+            },
+            error: function (xhr, status, error) {
+               // alert(status);
+            }
+        },
+            $("#ddlTemplateName option:selected").text(localStorage.getItem("TTemplateName")));
+            BindTemplate();
+          // $('#txtTemplate').val("");
+
+    });
+</script>

@@ -1,0 +1,2 @@
+D:\ORAI\Github-Notification\ORAI-NOTIFICATION\ORAI-NOTIFICATION\obj\Debug\ORAI-NOTIFICATION.csproj.CoreCompileInputs.cache
+D:\ORAI\Github-Notification\ORAI-NOTIFICATION\ORAI-NOTIFICATION\obj\Debug\ORAI-NOTIFICATION.csproj.AssemblyReference.cache
